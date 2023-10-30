@@ -15,6 +15,12 @@
         </span>
       </template>
     <template v-if="column.dataIndex === 'operation'">
+      <a-button
+          type="text"
+          @click="onUpdate(record)"
+      >
+        更新
+      </a-button>
       <a-popconfirm
           v-if="userTable.length"
           title="Sure to delete?"
@@ -52,6 +58,41 @@
           <a-select
               ref="select"
               v-model:value="newUserForm.roleId"
+              style="width: 200px"
+              :options="userRole"
+          ></a-select>
+        </a-space>
+      </a-form-item>
+    </a-form>
+  </a-modal>
+  <a-modal v-model:visible="updateVisible" title="更新用户" @ok="updateUser">
+    <a-form
+        :model="updateUserForm"
+        name="basic"
+        autocomplete="off"
+    >
+      <a-form-item
+          label="用户名"
+          disabled
+          :rules="[{ required: true, message: '请输入用户名' }]"
+      >
+        <a-input v-model:value="updateUserForm.userName" />
+      </a-form-item>
+
+      <a-form-item
+          label="新密码"
+          :rules="[{ required: true, message: '请输入密码' }]"
+      >
+        <a-input-password v-model:value="updateUserForm.password" />
+      </a-form-item>
+      <a-form-item
+          label="用户角色"
+          :rules="[{ required: true, message: '请选择用户角色' }]"
+      >
+        <a-space>
+          <a-select
+              ref="select"
+              v-model:value="updateUserForm.roleId"
               style="width: 200px"
               :options="userRole"
           ></a-select>
@@ -106,6 +147,13 @@ export default defineComponent({
       roleId: undefined,
     });
 
+    const updateUserForm = ref({
+      userId: undefined,
+      userName: undefined,
+      password: undefined,
+      roleId: undefined,
+    });
+
     const userRole = ref([{
       value: 1,
       label: "系统管理员"
@@ -119,6 +167,7 @@ export default defineComponent({
 
     // 定义显示框显示开关
     const visible = ref(false);
+    const updateVisible = ref(false);
 
     // 定义表格加载状态开关
     const userInfoLoading = ref();
@@ -143,6 +192,32 @@ export default defineComponent({
         }else {
           notification.error({
             message: "用户新增失败",
+            description: json.message
+          });
+        }
+      })
+    }
+    // updateUser info
+    const onUpdate = (record) => {
+      updateUserForm.value.password = undefined;
+      updateUserForm.value.roleId = record.roleId;
+      updateUserForm.value.userName = record.userName;
+      updateUserForm.value.userId = record.userId;
+      updateVisible.value = true;
+    }
+
+    const updateUser = () => {
+      axios.post("/user/manage/admin/update", updateUserForm.value).then((response) => {
+        const json = response.data;
+        if(json.status){
+          notification.success({
+            description: "用户更新成功"
+          });
+          updateVisible.value = false;
+          handelQuery();
+        }else {
+          notification.error({
+            message: "用户更新失败",
             description: json.message
           });
         }
@@ -218,7 +293,11 @@ export default defineComponent({
       handleTableChange,
       onDelete,
       showAddModel,
-      addNewUser
+      addNewUser,
+      updateUserForm,
+      updateVisible,
+      onUpdate,
+      updateUser
     }
   }
 });
