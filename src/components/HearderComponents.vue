@@ -39,8 +39,24 @@ export default defineComponent({
           switchLoading.value = false;
         }
       })
-      console.log(state.value);
     };
+
+    const checkStatus = () => {
+      axios.get("/user/system/login/door/status").then((response) => {
+        const json = response.data;
+        if (json.status) {
+          if(json.data === 0){
+            state.value = false;
+          }else {
+            state.value = true;
+          }
+        }
+      })
+    }
+    onMounted(() => {
+      checkStatus();
+    })
+
 
 
     return {
