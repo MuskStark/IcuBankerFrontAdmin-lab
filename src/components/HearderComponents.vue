@@ -2,18 +2,51 @@
 <template>
   <a-layout-header class="header">
     <div class="logo-image"/>
+    <a-switch class="switch" v-model:checked="state" @click="clickSwitch" :loading="switchLoading" checked-children="维护中" un-checked-children="服务中" />
 
   </a-layout-header>
 </template>
 
 <script>
-import {defineComponent} from 'vue';
+import {defineComponent, ref} from 'vue';
+import axios from "axios";
+import {notification} from "ant-design-vue";
 export default defineComponent({
   name: "sideBar-view",
   setup() {
+    const switchLoading = ref(false);
+    const state = ref(false);
+    const clickSwitch = () => {
+      switchLoading.value = true;
+      let _state;
+      if(state.value){
+        _state = 1;
+      }else {
+        _state = 0;
+      }
+      axios.get("/user/system/admin/door/update/" + _state).then((response) => {
+        const json = response.data;
+        if(json.status){
+          notification.success({
+            message: '切换成功',
+          })
+          switchLoading.value = false;
+        }else {
+          notification.error({
+            message: '切换失败',
+          })
+          state.value = !state.value;
+          switchLoading.value = false;
+        }
+      })
+      console.log(state.value);
+    };
 
 
     return {
+      state,
+      clickSwitch,
+      switchLoading
     };
   },
 });
@@ -28,5 +61,10 @@ export default defineComponent({
   width: 200px;
   height: 50px;
   display: inline-block;
+}
+.switch{
+  float: right;
+  margin-right: 20px;
+  margin-top: 20px;
 }
 </style>
