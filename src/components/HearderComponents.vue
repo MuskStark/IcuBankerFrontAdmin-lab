@@ -2,7 +2,27 @@
 <template>
   <a-layout-header class="header">
     <div class="logo-image"/>
-    <a-switch class="switch" v-model:checked="state" @click="clickSwitch" :loading="switchLoading" checked-children="维护中" un-checked-children="服务中" />
+    <a-button class="userButton" type="link" @click="showDrawer">用户信息</a-button>
+    <a-drawer
+        v-model:open="open"
+        class="custom-class"
+        root-class-name="root-class-name"
+        :root-style="{ color: 'blue' }"
+        style="color: red"
+        title="登录信息"
+        placement="right"
+        @after-open-change="afterOpenChange"
+    >
+      <div>
+        <span style="color: black">
+          维护状态：
+        </span>
+      <a-switch class="switch" v-model:checked="state" @click="clickSwitch" :loading="switchLoading" checked-children="维护中" un-checked-children="服务中" />
+      </div>
+      <div class="logoutButton">
+      <a-button  type="primary" @click="logout">退出</a-button>
+      </div>
+    </a-drawer>
 
   </a-layout-header>
 </template>
@@ -11,6 +31,7 @@
 import {defineComponent, onMounted, ref} from 'vue';
 import axios from "axios";
 import {notification} from "ant-design-vue";
+import router from "@/router";
 export default defineComponent({
   name: "sideBar-view",
   setup() {
@@ -53,6 +74,17 @@ export default defineComponent({
         }
       })
     }
+
+    const open = ref(false);
+    const showDrawer = () => {
+      open.value = true;
+    }
+
+    const logout = () => {
+      window.sessionStorage.clear();
+      router.push("/login");
+
+    }
     onMounted(() => {
       checkStatus();
     })
@@ -62,7 +94,10 @@ export default defineComponent({
     return {
       state,
       clickSwitch,
-      switchLoading
+      switchLoading,
+      open,
+      showDrawer,
+      logout
     };
   },
 });
@@ -78,9 +113,22 @@ export default defineComponent({
   height: 50px;
   display: inline-block;
 }
+.userButton {
+  float: right;
+  margin-right: 10px;
+  margin-top: 15px;
+}
 .switch{
   float: right;
-  margin-right: 20px;
-  margin-top: 20px;
 }
+
+.logoutButton{
+  position: absolute;
+  display: inline-block;
+  margin-left: 135px;
+  bottom: 15px;
+
+
+}
+
 </style>
