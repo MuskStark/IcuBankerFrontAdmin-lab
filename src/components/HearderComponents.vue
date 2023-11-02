@@ -11,7 +11,6 @@
         style="color: red"
         title="登录信息"
         placement="right"
-        @after-open-change="afterOpenChange"
     >
       <div>
         <span style="color: black">
@@ -19,8 +18,9 @@
         </span>
       <a-switch class="switch" v-model:checked="state" @click="clickSwitch" :loading="switchLoading" checked-children="维护中" un-checked-children="服务中" />
       </div>
+      <a-divider />
       <div class="info">
-      <a-descriptions>
+      <a-descriptions :column="1">
         <a-descriptions-item label="用户名">{{userInfo.userName}}</a-descriptions-item>
         <a-descriptions-item label="会员等级">{{ userInfo.roleName }}</a-descriptions-item>
       </a-descriptions>
@@ -66,6 +66,12 @@ export default defineComponent({
           state.value = !state.value;
           switchLoading.value = false;
         }
+      }).catch(() => {
+        notification.error({
+          message: '切换失败',
+        })
+        state.value = !state.value;
+        switchLoading.value = false;
       })
     };
 
