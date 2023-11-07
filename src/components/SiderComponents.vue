@@ -24,6 +24,11 @@
             <user-outlined/> &nbsp; 定时任务管理
           </router-link>
         </a-menu-item>
+        <a-menu-item key="/timeline-view">
+          <router-link to="/timeline-view">
+            <user-outlined/> &nbsp; 更新日志维护
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
     </a-menu>
   </a-layout-sider>
