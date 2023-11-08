@@ -12,9 +12,9 @@
            :loading="loading">
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'operation'">
-          <a-button type="primary" @click="handleEdit(record)" size="small">
-            更新
-          </a-button>
+        <a-button type="primary" @click="handleEdit(record)" size="small">
+          更新
+        </a-button>
         <a-space>
           <a-popconfirm
               title="删除后不可恢复，确认删除?"
@@ -30,15 +30,30 @@
       </template>
     </template>
   </a-table>
+  <a-modal
+      v-model:title="modelTitle"
+      v-model:visible="modalVisible"
+      :confirm-loading="modalLoading"
+      @ok="handleModalOk"
+  >
+    <a-form :model="timelineInfo" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
+      <a-form-item label="更新内容">
+        <a-textarea style="height: 50px" v-model:value="timelineInfo.subject"/>
+      </a-form-item>
+      <a-form-item label="节点颜色">
+        <a-input v-model:value="timelineInfo.color"/>
+      </a-form-item>
+    </a-form>
+  </a-modal>
 </template>
-
 <script>
-import { defineComponent, onMounted, ref } from 'vue';
+import {defineComponent, onMounted, ref} from 'vue';
 import axios from 'axios';
+import {notification} from "ant-design-vue";
 
 export default defineComponent({
   name: 'timeline-view',
-  setup () {
+  setup() {
 
     const loading = ref(false);
     const timelines = ref([]);
@@ -82,13 +97,73 @@ export default defineComponent({
             index++;
           });
           timelines.value = timeLine;
-          loading.value= false;
+          loading.value = false;
         }
       })
     }
 
     const handleQuery = () => {
       getTimeLine();
+    }
+
+    const modelTitle = ref();
+    const modalVisible = ref(false);
+    const modalLoading = ref(false);
+    const timelineInfo = ref({
+      id: undefined,
+      subject: undefined,
+      color: undefined,
+    })
+
+    const handleAdd = () => {
+      modelTitle.value = "新增";
+      timelineInfo.value.subject = "";
+      timelineInfo.value.color = "";
+      modalVisible.value = true;
+    }
+
+    const handleEdit = (record) => {
+      modelTitle.value = "更新";
+      timelineInfo.value = window.Tool.copy(record);
+      modalVisible.value = true;
+    }
+
+    const handleDelete = (record) => {
+      axios.get("/sys/timeline/admin/delete/"+ record.id).then((response) => {
+        const json = response.data;
+        if (json.status) {
+          notification.success({description: "删除成功！"});
+          handleQuery();
+        } else {
+          notification.error({description: json.message});
+        }
+      })
+    }
+
+    const handleModalOk = () => {
+      if (modelTitle.value === "新增") {
+        axios.post("/sys/timeline/admin/add", timelineInfo.value).then((response) => {
+          const json = response.data;
+          if (json.status) {
+            notification.success({description: "新增成功！"});
+            handleQuery();
+            modalVisible.value = false;
+          } else {
+            notification.error({description: json.message});
+          }
+        })
+      } else if (modelTitle.value === "更新") {
+        axios.post("/sys/timeline/admin/update", timelineInfo.value).then((response) => {
+          const json = response.data;
+          if (json.status) {
+            notification.success({description: "更新成功！"});
+            handleQuery();
+            modalVisible.value = false;
+          } else {
+            notification.error({description: json.message});
+          }
+        })
+      }
     }
 
 
@@ -101,8 +176,16 @@ export default defineComponent({
       loading,
       timelines,
       columns,
-      handleQuery
-    };
+      handleQuery,
+      modelTitle,
+      modalVisible,
+      modalLoading,
+      handleAdd,
+      handleEdit,
+      handleModalOk,
+      handleDelete,
+      timelineInfo
+    }
   }
 })
 </script>
