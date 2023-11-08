@@ -17,6 +17,10 @@ const routes = [{
       path: 'batch-job-view',
       component: () => import('../views/SecondaryRoutingViews/scheduled/scheduled.vue'),
     },
+    {
+      path: 'timeline-view',
+      component: () => import('../views/SecondaryRoutingViews/timeline/timeline.vue'),
+    },
   ]
 },
   {
